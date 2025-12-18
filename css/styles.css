@@ -1,5 +1,7 @@
 /* ============================================
-   COMBA INVADERS - Child-Friendly Styling
+   COMBA INVADERS - Estilo Intergaláctico
+   OVNIs, Aliens y el Universo
+   Optimizado para móvil y escritorio
    ============================================ */
 
 * {
@@ -8,15 +10,25 @@
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Nunito', sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
+html {
+    height: 100%;
+    overflow: hidden;
 }
 
-/* Stars background effect */
+body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1a2d 50%, #1a0d2e 100%);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow: hidden;
+    position: relative;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+}
+
+/* Efecto de estrellas en el fondo */
 body::before {
     content: '';
     position: fixed;
@@ -25,16 +37,16 @@ body::before {
     width: 100%;
     height: 100%;
     background-image:
-        radial-gradient(2px 2px at 20px 30px, #fff, transparent),
-        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
-        radial-gradient(1px 1px at 90px 40px, #fff, transparent),
-        radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.9), transparent),
-        radial-gradient(1px 1px at 230px 80px, #fff, transparent),
-        radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.7), transparent),
-        radial-gradient(1px 1px at 350px 200px, #fff, transparent),
-        radial-gradient(2px 2px at 420px 100px, rgba(255,255,255,0.8), transparent),
-        radial-gradient(1px 1px at 500px 180px, #fff, transparent),
-        radial-gradient(2px 2px at 580px 50px, rgba(255,255,255,0.9), transparent);
+        radial-gradient(2px 2px at 20px 30px, #00ff88, transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(0,255,136,0.8), transparent),
+        radial-gradient(1px 1px at 90px 40px, #88ff00, transparent),
+        radial-gradient(2px 2px at 160px 120px, rgba(0,255,204,0.9), transparent),
+        radial-gradient(1px 1px at 230px 80px, #ffffff, transparent),
+        radial-gradient(2px 2px at 300px 150px, rgba(136,0,255,0.7), transparent),
+        radial-gradient(1px 1px at 350px 200px, #00ffcc, transparent),
+        radial-gradient(2px 2px at 420px 100px, rgba(255,0,255,0.8), transparent),
+        radial-gradient(1px 1px at 500px 180px, #88ffff, transparent),
+        radial-gradient(2px 2px at 580px 50px, rgba(255,255,0,0.9), transparent);
     background-size: 600px 300px;
     animation: twinkle 4s ease-in-out infinite;
     pointer-events: none;
@@ -42,12 +54,12 @@ body::before {
 }
 
 @keyframes twinkle {
-    0%, 100% { opacity: 0.8; }
+    0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
 
 /* ============================================
-   Game Container Layout
+   Diseño del Contenedor del Juego
    ============================================ */
 
 .game-container {
@@ -57,6 +69,7 @@ body::before {
     gap: 30px;
     padding: 20px;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     position: relative;
     z-index: 1;
 }
@@ -65,21 +78,24 @@ body::before {
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    max-width: 650px;
 }
 
 /* ============================================
-   Photo Frames for Nephews
+   Marcos de Fotos
    ============================================ */
 
 .photo-frame {
-    background: linear-gradient(145deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    background: linear-gradient(145deg, #00ff88, #00ffcc, #88ff00, #ff00ff);
     background-size: 400% 400%;
     animation: rainbow-border 5s ease infinite;
     padding: 8px;
     border-radius: 20px;
     box-shadow:
         0 10px 30px rgba(0,0,0,0.3),
-        0 0 20px rgba(255, 107, 107, 0.3);
+        0 0 20px rgba(0, 255, 136, 0.3),
+        0 0 40px rgba(0, 255, 136, 0.1);
     position: sticky;
     top: 100px;
     width: 180px;
@@ -130,8 +146,8 @@ body::before {
     height: 160px;
     object-fit: cover;
     border-radius: 15px;
-    border: 4px solid white;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 4px solid #00ff88;
+    background: linear-gradient(135deg, #0d1a2d 0%, #1a0d2e 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -139,78 +155,104 @@ body::before {
 
 .photo-label {
     font-family: 'Fredoka One', cursive;
-    color: white;
+    color: #00ff88;
     font-size: 1rem;
     margin-top: 8px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 /* ============================================
-   Game Header
+   Encabezado del Juego
    ============================================ */
 
 .game-header {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    width: 100%;
 }
 
 .game-header h1 {
     font-family: 'Fredoka One', cursive;
     font-size: 2.5rem;
-    color: #fff;
+    color: #00ff88;
     text-shadow:
-        3px 3px 0 #ff6b6b,
-        6px 6px 0 #feca57;
-    margin-bottom: 10px;
+        0 0 10px rgba(0, 255, 136, 0.8),
+        0 0 20px rgba(0, 255, 136, 0.5),
+        0 0 30px rgba(0, 255, 136, 0.3),
+        3px 3px 0 #00ffcc;
+    margin-bottom: 5px;
     animation: title-glow 2s ease-in-out infinite;
 }
 
+.subtitle {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: #88ffff;
+    text-shadow: 0 0 10px rgba(136, 255, 255, 0.5);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
 @keyframes title-glow {
-    0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5)); }
-    50% { filter: drop-shadow(0 0 20px rgba(254, 202, 87, 0.8)); }
+    0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5));
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(0, 255, 204, 0.8));
+        transform: scale(1.02);
+    }
 }
 
 .score-board {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 15px;
     font-family: 'Fredoka One', cursive;
-    font-size: 1.2rem;
-    color: #48dbfb;
+    font-size: 1rem;
+    color: #00ffcc;
+    flex-wrap: wrap;
 }
 
 .score-board > div {
-    background: rgba(255,255,255,0.1);
-    padding: 8px 20px;
+    background: rgba(0, 255, 136, 0.1);
+    padding: 6px 15px;
     border-radius: 25px;
-    border: 2px solid rgba(72, 219, 251, 0.5);
+    border: 2px solid rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
 }
 
 /* ============================================
-   Game Area
+   Área del Juego
    ============================================ */
 
 .game-area {
     position: relative;
-    border-radius: 20px;
+    border-radius: 15px;
     overflow: hidden;
     box-shadow:
-        0 0 0 5px #ff6b6b,
-        0 0 0 10px #feca57,
-        0 0 0 15px #48dbfb,
+        0 0 0 3px #00ff88,
+        0 0 0 6px #00ffcc,
+        0 0 0 9px #88ff00,
+        0 0 30px rgba(0, 255, 136, 0.5),
         0 20px 40px rgba(0,0,0,0.4);
+    width: 100%;
+    max-width: 600px;
 }
 
 #gameCanvas {
     display: block;
     background: linear-gradient(180deg,
         #0a0a1a 0%,
-        #1a1a3e 50%,
-        #2a1a4e 100%);
+        #0d1a2d 50%,
+        #1a0d2e 100%);
+    touch-action: none;
+    width: 100%;
+    height: auto;
 }
 
 /* ============================================
-   Overlays (Start, Game Over, Level Complete)
+   Overlays (Inicio, Game Over, Nivel Completado)
    ============================================ */
 
 .overlay {
@@ -219,7 +261,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.92);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -233,96 +275,215 @@ body::before {
 .overlay-content {
     text-align: center;
     color: white;
-    padding: 40px;
-    background: linear-gradient(145deg, rgba(255,107,107,0.2), rgba(72,219,251,0.2));
-    border-radius: 30px;
-    border: 3px solid rgba(255,255,255,0.3);
+    padding: 30px 25px;
+    background: linear-gradient(145deg, rgba(0,255,136,0.1), rgba(0,255,204,0.1));
+    border-radius: 25px;
+    border: 3px solid rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
     animation: pulse-border 2s ease-in-out infinite;
+    max-width: 90%;
+    margin: 10px;
 }
 
 @keyframes pulse-border {
-    0%, 100% { border-color: rgba(255,107,107,0.5); }
-    50% { border-color: rgba(72,219,251,0.5); }
+    0%, 100% { border-color: rgba(0, 255, 136, 0.5); box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+    50% { border-color: rgba(0, 255, 204, 0.8); box-shadow: 0 0 50px rgba(0, 255, 204, 0.5); }
 }
 
 .overlay-content h2 {
     font-family: 'Fredoka One', cursive;
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    font-size: 2rem;
+    margin-bottom: 12px;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+    color: #00ff88;
 }
 
 .overlay-content p {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    color: #feca57;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #00ffcc;
+}
+
+.mission-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem !important;
+    color: #88ffff !important;
+}
+
+.sub-mission {
+    font-size: 0.95rem !important;
+    color: #ff88ff !important;
+    font-style: italic;
+}
+
+.encourage-text {
+    color: #88ff00 !important;
+    font-size: 1rem !important;
+}
+
+.next-level-text {
+    color: #ffff00 !important;
+    animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .final-score {
     font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem !important;
-    color: #48dbfb !important;
+    font-size: 1.4rem !important;
+    color: #88ff00 !important;
+    text-shadow: 0 0 10px rgba(136, 255, 0, 0.5);
+    margin-top: 10px !important;
 }
 
 .play-btn {
     font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem;
-    padding: 15px 50px;
-    margin-top: 20px;
+    font-size: 1.3rem;
+    padding: 12px 40px;
+    margin-top: 15px;
     border: none;
     border-radius: 50px;
-    background: linear-gradient(145deg, #ff6b6b, #ff8e8e);
-    color: white;
+    background: linear-gradient(145deg, #00ff88, #00cc6a);
+    color: #0a0a1a;
     cursor: pointer;
     box-shadow:
-        0 6px 0 #c44d4d,
+        0 6px 0 #009950,
+        0 0 20px rgba(0, 255, 136, 0.5),
         0 10px 20px rgba(0,0,0,0.3);
     transition: all 0.1s ease;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .play-btn:hover {
     transform: translateY(-2px);
     box-shadow:
-        0 8px 0 #c44d4d,
+        0 8px 0 #009950,
+        0 0 30px rgba(0, 255, 136, 0.7),
         0 15px 25px rgba(0,0,0,0.4);
 }
 
 .play-btn:active {
     transform: translateY(4px);
     box-shadow:
-        0 2px 0 #c44d4d,
+        0 2px 0 #009950,
+        0 0 15px rgba(0, 255, 136, 0.4),
         0 5px 10px rgba(0,0,0,0.3);
 }
 
 .controls-info {
-    margin-top: 25px;
-    padding: 15px;
-    background: rgba(255,255,255,0.1);
+    margin-top: 20px;
+    padding: 12px;
+    background: rgba(0, 255, 136, 0.1);
     border-radius: 15px;
+    border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
 .controls-info p {
-    color: #fff;
-    font-size: 1rem;
-    margin: 5px 0;
+    color: #88ffff;
+    font-size: 0.95rem;
+    margin: 4px 0;
+}
+
+.controls-info .mobile-hint {
+    color: #ffff00;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    display: none;
 }
 
 /* ============================================
-   Game Footer
+   Controles Móviles
+   ============================================ */
+
+.mobile-controls {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 15px;
+    padding: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.control-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #00ff88;
+    background: linear-gradient(145deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 136, 0.1));
+    color: #00ff88;
+    font-size: 2rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow:
+        0 0 20px rgba(0, 255, 136, 0.3),
+        inset 0 0 20px rgba(0, 255, 136, 0.1);
+    transition: all 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.control-btn:active,
+.control-btn.pressed {
+    transform: scale(0.92);
+    background: linear-gradient(145deg, rgba(0, 255, 136, 0.5), rgba(0, 255, 136, 0.4));
+    box-shadow:
+        0 0 40px rgba(0, 255, 136, 0.7),
+        inset 0 0 30px rgba(0, 255, 136, 0.4);
+}
+
+.control-btn span {
+    pointer-events: none;
+}
+
+.control-fire {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(145deg, rgba(255, 100, 0, 0.3), rgba(255, 50, 0, 0.2));
+    border-color: #ff6600;
+    color: #ff6600;
+    box-shadow:
+        0 0 25px rgba(255, 100, 0, 0.5),
+        inset 0 0 20px rgba(255, 100, 0, 0.1);
+    font-size: 2.5rem;
+}
+
+.control-fire:active {
+    background: linear-gradient(145deg, rgba(255, 100, 0, 0.6), rgba(255, 50, 0, 0.5));
+    box-shadow:
+        0 0 50px rgba(255, 100, 0, 0.8),
+        inset 0 0 30px rgba(255, 100, 0, 0.4);
+}
+
+/* ============================================
+   Pie de Página del Juego
    ============================================ */
 
 .game-footer {
     margin-top: 15px;
     text-align: center;
-    color: #ff9ff3;
-    font-size: 1rem;
+    color: #00ffcc;
+    font-size: 0.95rem;
     font-family: 'Fredoka One', cursive;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+}
+
+.footer-sub {
+    font-size: 0.8rem;
+    color: #88ffff;
+    margin-top: 5px;
 }
 
 /* ============================================
-   Floating Decorations
+   Elementos Flotantes de Decoración
    ============================================ */
 
 .floating-elements {
@@ -340,13 +501,15 @@ body::before {
     position: absolute;
     font-size: 2rem;
     animation: float 15s ease-in-out infinite;
-    opacity: 0.6;
+    opacity: 0.5;
+    filter: drop-shadow(0 0 10px currentColor);
 }
 
 .rocket {
     top: 20%;
     left: 5%;
     animation-delay: 0s;
+    color: #00ff88;
 }
 
 .planet {
@@ -354,18 +517,21 @@ body::before {
     right: 8%;
     animation-delay: 3s;
     font-size: 2.5rem;
+    color: #ff9900;
 }
 
 .star-float {
     top: 30%;
     right: 15%;
     animation-delay: 6s;
+    color: #ffff00;
 }
 
 .ufo {
     bottom: 30%;
     left: 10%;
     animation-delay: 9s;
+    color: #00ff88;
 }
 
 .moon {
@@ -373,6 +539,39 @@ body::before {
     right: 5%;
     animation-delay: 12s;
     font-size: 2.5rem;
+    color: #ffff99;
+}
+
+.galaxy {
+    top: 50%;
+    left: 3%;
+    animation-delay: 7s;
+    font-size: 2.5rem;
+    color: #8800ff;
+}
+
+.comet {
+    top: 10%;
+    left: 50%;
+    animation-delay: 4s;
+    font-size: 1.8rem;
+    color: #ff6600;
+}
+
+.earth {
+    bottom: 20%;
+    right: 12%;
+    animation-delay: 5s;
+    font-size: 2rem;
+    color: #0088ff;
+}
+
+.satellite {
+    top: 40%;
+    left: 8%;
+    animation-delay: 11s;
+    font-size: 1.5rem;
+    color: #cccccc;
 }
 
 @keyframes float {
@@ -391,7 +590,7 @@ body::before {
 }
 
 /* ============================================
-   Responsive Design
+   Diseño Responsivo
    ============================================ */
 
 @media (max-width: 1200px) {
@@ -404,27 +603,229 @@ body::before {
     }
 }
 
+/* Tablet y móvil grande */
+@media (max-width: 800px) {
+    .mobile-controls {
+        display: flex;
+    }
+
+    .controls-info .mobile-hint {
+        display: block;
+    }
+
+    .controls-info .desktop-controls {
+        display: none;
+    }
+}
+
+/* Móvil */
 @media (max-width: 700px) {
+    .game-container {
+        padding: 8px;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
     .game-header h1 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
     }
 
     .score-board {
-        flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
-    #gameCanvas {
-        width: 100%;
-        height: auto;
+    .score-board > div {
+        padding: 5px 12px;
+        font-size: 0.85rem;
+    }
+
+    .game-area {
+        border-radius: 10px;
+        box-shadow:
+            0 0 0 2px #00ff88,
+            0 0 0 4px #00ffcc,
+            0 0 20px rgba(0, 255, 136, 0.4);
+    }
+
+    .overlay-content {
+        padding: 20px 15px;
+        border-radius: 20px;
     }
 
     .overlay-content h2 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+    }
+
+    .overlay-content p {
+        font-size: 0.95rem;
+    }
+
+    .mission-text {
+        font-size: 1rem !important;
     }
 
     .play-btn {
+        font-size: 1.1rem;
+        padding: 10px 30px;
+    }
+
+    .control-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
+    }
+
+    .control-fire {
+        width: 90px;
+        height: 90px;
+        font-size: 2.2rem;
+    }
+
+    .mobile-controls {
+        gap: 15px;
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    .game-footer {
+        font-size: 0.8rem;
+        padding: 0 10px;
+        margin-top: 10px;
+    }
+
+    .footer-sub {
+        font-size: 0.7rem;
+    }
+
+    .floating-elements {
+        display: none;
+    }
+}
+
+/* Móvil pequeño */
+@media (max-width: 400px) {
+    .game-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .score-board > div {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+    }
+
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .control-fire {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+
+    .overlay-content h2 {
+        font-size: 1.3rem;
+    }
+
+    .overlay-content p {
+        font-size: 0.85rem;
+    }
+
+    .play-btn {
+        font-size: 1rem;
+        padding: 10px 25px;
+    }
+}
+
+/* Prevenir zoom en doble tap en móvil */
+* {
+    touch-action: manipulation;
+}
+
+/* Estilos para landscape en móvil */
+@media (max-height: 600px) and (orientation: landscape) {
+    .game-container {
+        padding: 5px;
+        min-height: auto;
+    }
+
+    .game-wrapper {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .game-header {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .game-header h1 {
         font-size: 1.2rem;
-        padding: 12px 35px;
+        margin-bottom: 3px;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
+    .score-board {
+        gap: 8px;
+    }
+
+    .score-board > div {
+        padding: 3px 10px;
+        font-size: 0.75rem;
+    }
+
+    .game-area {
+        max-width: 55vw;
+        max-height: 80vh;
+    }
+
+    .mobile-controls {
+        flex-direction: column;
+        margin-top: 0;
+        padding: 5px;
+        width: auto;
+        gap: 8px;
+    }
+
+    .control-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 1.3rem;
+    }
+
+    .control-fire {
+        width: 65px;
+        height: 65px;
+        font-size: 1.6rem;
+    }
+
+    .game-footer {
+        display: none;
+    }
+}
+
+/* iPhone notch safe areas */
+@supports (padding: max(0px)) {
+    .game-container {
+        padding-left: max(8px, env(safe-area-inset-left));
+        padding-right: max(8px, env(safe-area-inset-right));
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
     }
 }

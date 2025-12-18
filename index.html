@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comba Invaders - Space Adventure!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a1a">
+    <title>Comba Invaders - Aventura Intergaláctica</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -12,35 +16,38 @@
         <!-- Photo frames for nephews -->
         <div class="photo-frame photo-frame-left">
             <div class="frame-decoration">
-                <span class="star">⭐</span>
-                <span class="star">🌟</span>
+                <span class="star">🛸</span>
+                <span class="star">👽</span>
             </div>
-            <img src="assets/images/nephew1.png" alt="Player 1" class="nephew-photo" id="nephew1">
-            <p class="photo-label">Space Captain!</p>
+            <img src="assets/images/nephew1.png" alt="Jugador 1" class="nephew-photo" id="nephew1">
+            <p class="photo-label">Comandante Espacial</p>
         </div>
 
         <div class="game-wrapper">
             <header class="game-header">
-                <h1>🚀 Comba Invaders 👾</h1>
+                <h1>🛸 Comba Invaders 👽</h1>
+                <p class="subtitle">Aventura Intergaláctica</p>
                 <div class="score-board">
-                    <div class="score">Score: <span id="score">0</span></div>
-                    <div class="lives">Lives: <span id="lives">❤️❤️❤️</span></div>
-                    <div class="level">Level: <span id="level">1</span></div>
+                    <div class="score">Puntos: <span id="score">0</span></div>
+                    <div class="lives">Vidas: <span id="lives">💚💚💚</span></div>
+                    <div class="level">Nivel: <span id="level">1</span></div>
                 </div>
             </header>
 
             <main class="game-area">
-                <canvas id="gameCanvas" width="600" height="500"></canvas>
+                <canvas id="gameCanvas"></canvas>
 
                 <!-- Start screen overlay -->
                 <div class="overlay" id="startScreen">
                     <div class="overlay-content">
-                        <h2>🎮 Ready to Play? 🎮</h2>
-                        <p>Help defend Earth from the silly aliens!</p>
-                        <button class="play-btn" id="startBtn">START GAME!</button>
+                        <h2>🌌 ¿Listo para la Misión? 🌌</h2>
+                        <p class="mission-text">¡Defiende la Vía Láctea de la invasión OVNI!</p>
+                        <p class="sub-mission">Los extraterrestres vienen de Andrómeda...</p>
+                        <button class="play-btn" id="startBtn">🚀 ¡DESPEGAR! 🚀</button>
                         <div class="controls-info">
-                            <p>⬅️ ➡️ Arrow keys to move</p>
-                            <p>SPACE to shoot!</p>
+                            <p class="desktop-controls">⬅️ ➡️ Flechas para moverte</p>
+                            <p class="desktop-controls">ESPACIO para disparar rayos láser</p>
+                            <p class="mobile-hint">📱 ¡Usa los controles táctiles abajo!</p>
                         </div>
                     </div>
                 </div>
@@ -48,45 +55,74 @@
                 <!-- Game over overlay -->
                 <div class="overlay hidden" id="gameOverScreen">
                     <div class="overlay-content">
-                        <h2>🌟 Game Over! 🌟</h2>
-                        <p>Amazing job, Space Captain!</p>
-                        <p class="final-score">Your Score: <span id="finalScore">0</span></p>
-                        <button class="play-btn" id="restartBtn">PLAY AGAIN!</button>
+                        <h2>💫 ¡Misión Fallida! 💫</h2>
+                        <p>Los OVNIs han conquistado la galaxia...</p>
+                        <p class="encourage-text">¡Pero un verdadero comandante nunca se rinde!</p>
+                        <p class="final-score">Puntuación Final: <span id="finalScore">0</span></p>
+                        <button class="play-btn" id="restartBtn">🔄 ¡REINTENTAR!</button>
                     </div>
                 </div>
 
                 <!-- Level complete overlay -->
                 <div class="overlay hidden" id="levelCompleteScreen">
                     <div class="overlay-content">
-                        <h2>🎉 Level Complete! 🎉</h2>
-                        <p>You're a superstar!</p>
-                        <button class="play-btn" id="nextLevelBtn">NEXT LEVEL!</button>
+                        <h2>🎉 ¡Sector Liberado! 🎉</h2>
+                        <p>¡Has defendido este sector de la galaxia!</p>
+                        <p class="next-level-text">Preparando salto hiperespacial...</p>
+                        <button class="play-btn" id="nextLevelBtn">🌟 ¡SIGUIENTE SECTOR!</button>
+                    </div>
+                </div>
+
+                <!-- Pause overlay -->
+                <div class="overlay hidden" id="pauseScreen">
+                    <div class="overlay-content">
+                        <h2>⏸️ Pausa Galáctica ⏸️</h2>
+                        <p>La flota está en espera...</p>
+                        <button class="play-btn" id="resumeBtn">▶️ ¡CONTINUAR!</button>
                     </div>
                 </div>
             </main>
 
+            <!-- Mobile touch controls -->
+            <div class="mobile-controls" id="mobileControls">
+                <button class="control-btn control-left" id="leftBtn" aria-label="Mover izquierda">
+                    <span>◀</span>
+                </button>
+                <button class="control-btn control-fire" id="fireBtn" aria-label="Disparar">
+                    <span>💥</span>
+                </button>
+                <button class="control-btn control-right" id="rightBtn" aria-label="Mover derecha">
+                    <span>▶</span>
+                </button>
+            </div>
+
             <footer class="game-footer">
-                <p>Made with 💖 for my favorite space explorers!</p>
+                <p>Hecho con 💚 para mis exploradores del universo favoritos</p>
+                <p class="footer-sub">¡Que la fuerza galáctica te acompañe! 🌌</p>
             </footer>
         </div>
 
         <div class="photo-frame photo-frame-right">
             <div class="frame-decoration">
-                <span class="star">🌟</span>
-                <span class="star">⭐</span>
+                <span class="star">👽</span>
+                <span class="star">🛸</span>
             </div>
-            <img src="assets/images/nephew2.png" alt="Player 2" class="nephew-photo" id="nephew2">
-            <p class="photo-label">Space Hero!</p>
+            <img src="assets/images/nephew2.png" alt="Jugador 2" class="nephew-photo" id="nephew2">
+            <p class="photo-label">Héroe Galáctico</p>
         </div>
     </div>
 
     <!-- Floating decorations -->
     <div class="floating-elements">
-        <span class="float-item rocket">🚀</span>
+        <span class="float-item rocket">🛸</span>
         <span class="float-item planet">🪐</span>
-        <span class="float-item star-float">⭐</span>
-        <span class="float-item ufo">🛸</span>
+        <span class="float-item star-float">✨</span>
+        <span class="float-item ufo">👽</span>
         <span class="float-item moon">🌙</span>
+        <span class="float-item galaxy">🌌</span>
+        <span class="float-item comet">☄️</span>
+        <span class="float-item earth">🌍</span>
+        <span class="float-item satellite">🛰️</span>
     </div>
 
     <script src="js/game.js"></script>
