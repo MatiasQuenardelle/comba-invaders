@@ -248,7 +248,8 @@ body::before {
         #1a0d2e 100%);
     touch-action: none;
     width: 100%;
-    height: auto;
+    max-width: 600px;
+    aspect-ratio: 600 / 500;
 }
 
 /* ============================================
