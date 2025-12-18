@@ -34,10 +34,29 @@ const CONFIG = {
     alienSpeedY: 25,
     alienShootChance: 0.002,
 
+    // Configuración de dificultad progresiva
+    initialAlienRows: 2,        // Nivel 1 empieza con 2 filas
+    initialAlienCols: 5,        // Nivel 1 empieza con 5 columnas
+    maxAlienRows: 5,            // Máximo de filas
+    maxAlienCols: 10,           // Máximo de columnas
+    initialAlienSpeedX: 0.8,    // Velocidad inicial más lenta
+    initialShootChance: 0.0008, // Probabilidad de disparo inicial más baja
+    speedIncreasePerLevel: 0.18, // Aumento de velocidad más gradual (18%)
+    shootChanceIncreasePerLevel: 0.0002, // Aumento de probabilidad de disparo por nivel
+
     // Configuración del juego
     startingLives: 3,
     pointsPerAlien: 10,
-    speedIncreasePerLevel: 0.3
+
+    // Configuración de salud
+    maxHealth: 100,
+    damagePerHit: 20,
+    invincibilityTime: 2000, // milisegundos
+
+    // Configuración de power-ups
+    powerupDropChance: 0.25, // 25% probabilidad de caída
+    powerupSpeed: 2, // velocidad de caída
+    powerupSize: 30 // tamaño del power-up
 };
 
 // ============================================
@@ -49,6 +68,9 @@ let gameRunning = false;
 let gamePaused = false;
 let score = 0;
 let lives = CONFIG.startingLives;
+let health = CONFIG.maxHealth;
+let invincible = false;
+let invincibleTimer = 0;
 let level = 1;
 let lastBulletTime = 0;
 let scale = 1;
@@ -70,6 +92,8 @@ let particles = [];
 let stars = [];
 let nebulas = [];
 let planets = [];
+let powerups = []; // Power-ups activos en pantalla
+let activePowerups = { rapidfire: 0, tripleshot: 0, shield: 0 }; // Temporizadores de efectos activos
 
 // Estado de entrada
 let keys = {
@@ -89,12 +113,49 @@ let isMobile = false;
 // ============================================
 
 const ALIEN_TYPES = [
-    { color: '#00ff88', eyes: '👁️', type: 'clasico', nombre: 'Explorador de Marte' },
-    { color: '#88ff00', eyes: '👀', type: 'mutante', nombre: 'Mutante de Plutón' },
-    { color: '#00ffcc', eyes: '🔮', type: 'psiquico', nombre: 'Psíquico de Neptuno' },
-    { color: '#ff00ff', eyes: '💜', type: 'cosmico', nombre: 'Viajero Cósmico' },
-    { color: '#ffff00', eyes: '⚡', type: 'electrico', nombre: 'Centella de Júpiter' },
-    { color: '#ff6600', eyes: '🔥', type: 'solar', nombre: 'Guerrero Solar' }
+    {
+        color: '#00ff88', eyes: '👁️', type: 'scout', nombre: 'Explorador de Marte',
+        health: 1, speedMod: 1.3, shootMod: 0.5, points: 10, size: 0.8,
+        behavior: 'zigzag'
+    },
+    {
+        color: '#88ff00', eyes: '👀', type: 'soldier', nombre: 'Soldado de Plutón',
+        health: 1, speedMod: 1.0, shootMod: 1.0, points: 15, size: 1.0,
+        behavior: 'normal'
+    },
+    {
+        color: '#00ffcc', eyes: '🔮', type: 'psychic', nombre: 'Psíquico de Neptuno',
+        health: 1, speedMod: 0.8, shootMod: 1.5, points: 20, size: 1.0,
+        behavior: 'tracker'
+    },
+    {
+        color: '#ff00ff', eyes: '💜', type: 'heavy', nombre: 'Tanque Cósmico',
+        health: 2, speedMod: 0.6, shootMod: 0.8, points: 30, size: 1.3,
+        behavior: 'tank'
+    },
+    {
+        color: '#ffff00', eyes: '⚡', type: 'speeder', nombre: 'Centella de Júpiter',
+        health: 1, speedMod: 1.8, shootMod: 0.3, points: 25, size: 0.9,
+        behavior: 'dasher'
+    },
+    {
+        color: '#ff6600', eyes: '🔥', type: 'bomber', nombre: 'Bombardero Solar',
+        health: 1, speedMod: 0.7, shootMod: 2.0, points: 25, size: 1.1,
+        behavior: 'bomber'
+    }
+];
+
+// ============================================
+// Tipos de Power-ups
+// ============================================
+
+const POWERUP_TYPES = [
+    { type: 'health', color: '#00ff00', emoji: '💚', effect: 'Restaurar 25 salud', name: 'Salud' },
+    { type: 'shield', color: '#00ffff', emoji: '🛡️', effect: '5 segundos invencibilidad', name: 'Escudo', duration: 5000 },
+    { type: 'rapidfire', color: '#ff8800', emoji: '⚡', effect: 'Disparo rápido por 8 segundos', name: 'Disparo Rápido', duration: 8000 },
+    { type: 'tripleshot', color: '#ff00ff', emoji: '🔱', effect: 'Triple disparo por 10 segundos', name: 'Triple Disparo', duration: 10000 },
+    { type: 'bomb', color: '#ff0000', emoji: '💣', effect: 'Elimina todas las balas enemigas', name: 'Bomba' },
+    { type: 'points', color: '#ffff00', emoji: '⭐', effect: 'Bonus 100 puntos', name: 'Puntos' }
 ];
 
 // Helper function to convert hex color to rgba
@@ -338,9 +399,14 @@ function togglePause() {
 function resetGame() {
     score = 0;
     lives = CONFIG.startingLives;
+    health = CONFIG.maxHealth;
+    invincible = false;
+    invincibleTimer = 0;
     bullets = [];
     alienBullets = [];
     particles = [];
+    powerups = [];
+    activePowerups = { rapidfire: 0, tripleshot: 0, shield: 0 };
     alienDirection = 1;
 
     // Reiniciar posición del jugador
@@ -348,8 +414,9 @@ function resetGame() {
 
     // Actualizar display
     document.getElementById('score').textContent = score;
-    document.getElementById('lives').textContent = '💚'.repeat(lives);
+    document.getElementById('lives').textContent = 'x' + lives;
     document.getElementById('level').textContent = level;
+    updateHealthBar();
 
     // Crear OVNIs invasores
     createAliens();
@@ -427,25 +494,51 @@ function createAliens() {
     aliens = [];
     const startX = 50;
     const startY = 50;
+    
+    // Calcular dificultad progresiva
+    // Velocidad: empieza en 0.8, aumenta 18% por nivel
     const speedMultiplier = 1 + (level - 1) * CONFIG.speedIncreasePerLevel;
-
-    // Ajustar número de columnas en niveles más altos
-    const cols = Math.min(CONFIG.alienCols + Math.floor(level / 3), 10);
-    const rows = Math.min(CONFIG.alienRows + Math.floor(level / 4), 5);
+    
+    // Filas: empieza con 2, aumenta cada 3 niveles hasta máximo 5
+    const rows = Math.min(CONFIG.initialAlienRows + Math.floor((level - 1) / 3), CONFIG.maxAlienRows);
+    
+    // Columnas: empieza con 5, aumenta cada 2 niveles hasta máximo 10
+    const cols = Math.min(CONFIG.initialAlienCols + Math.floor((level - 1) / 2), CONFIG.maxAlienCols);
 
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-            const typeIndex = (row + level) % ALIEN_TYPES.length;
+            // Strategic distribution: scouts/speeders front, soldiers/psychics middle, tanks/bombers back
+            let alienType;
+            if (row === 0) {
+                // Front row: scouts and speeders (easier, faster targets)
+                alienType = ALIEN_TYPES[col % 2 === 0 ? 0 : 4]; // scout or speeder
+            } else if (row === rows - 1 && rows > 2) {
+                // Back row: tanks and bombers (harder to reach)
+                alienType = ALIEN_TYPES[col % 2 === 0 ? 3 : 5]; // heavy or bomber
+            } else {
+                // Middle rows: soldiers and psychics
+                alienType = ALIEN_TYPES[col % 2 === 0 ? 1 : 2]; // soldier or psychic
+            }
+
+            const alienWidth = CONFIG.alienWidth * alienType.size;
+            const alienHeight = CONFIG.alienHeight * alienType.size;
+
             aliens.push({
                 x: startX + col * (CONFIG.alienWidth + CONFIG.alienPadding),
                 y: startY + row * (CONFIG.alienHeight + CONFIG.alienPadding),
-                width: CONFIG.alienWidth,
-                height: CONFIG.alienHeight,
-                type: ALIEN_TYPES[typeIndex],
+                width: alienWidth,
+                height: alienHeight,
+                type: alienType,
                 alive: true,
                 wobble: Math.random() * Math.PI * 2,
                 speedMultiplier: speedMultiplier,
-                pulsePhase: Math.random() * Math.PI * 2
+                pulsePhase: Math.random() * Math.PI * 2,
+                health: alienType.health,
+                maxHealth: alienType.health,
+                behavior: alienType.behavior,
+                dashTimer: 0,
+                dashCooldown: Math.random() * 200 + 100,
+                zigzagOffset: 0
             });
         }
     }
@@ -453,28 +546,93 @@ function createAliens() {
 
 function createBullet() {
     const now = Date.now();
-    if (now - lastBulletTime < CONFIG.bulletCooldown) return;
+
+    // Cooldown reducido si tiene rapidfire activo
+    const cooldown = activePowerups.rapidfire > 0 ? CONFIG.bulletCooldown / 2.5 : CONFIG.bulletCooldown;
+    if (now - lastBulletTime < cooldown) return;
 
     lastBulletTime = now;
-    bullets.push({
-        x: player.x + player.width / 2 - CONFIG.bulletWidth / 2,
-        y: player.y,
-        width: CONFIG.bulletWidth,
-        height: CONFIG.bulletHeight,
-        color: '#00ffcc'
-    });
 
-    // Partículas de disparo
-    createParticles(player.x + player.width / 2, player.y, '#00ffcc', 4);
+    // Si tiene tripleshot, disparar 3 balas
+    if (activePowerups.tripleshot > 0) {
+        // Bala central
+        bullets.push({
+            x: player.x + player.width / 2 - CONFIG.bulletWidth / 2,
+            y: player.y,
+            width: CONFIG.bulletWidth,
+            height: CONFIG.bulletHeight,
+            color: '#ff00ff',
+            vx: 0
+        });
+
+        // Bala izquierda
+        bullets.push({
+            x: player.x + player.width / 2 - CONFIG.bulletWidth / 2,
+            y: player.y,
+            width: CONFIG.bulletWidth,
+            height: CONFIG.bulletHeight,
+            color: '#ff00ff',
+            vx: -2
+        });
+
+        // Bala derecha
+        bullets.push({
+            x: player.x + player.width / 2 - CONFIG.bulletWidth / 2,
+            y: player.y,
+            width: CONFIG.bulletWidth,
+            height: CONFIG.bulletHeight,
+            color: '#ff00ff',
+            vx: 2
+        });
+
+        // Partículas de disparo especiales
+        createParticles(player.x + player.width / 2, player.y, '#ff00ff', 6);
+    } else {
+        // Disparo normal
+        bullets.push({
+            x: player.x + player.width / 2 - CONFIG.bulletWidth / 2,
+            y: player.y,
+            width: CONFIG.bulletWidth,
+            height: CONFIG.bulletHeight,
+            color: activePowerups.rapidfire > 0 ? '#ff8800' : '#00ffcc',
+            vx: 0
+        });
+
+        // Partículas de disparo
+        const particleColor = activePowerups.rapidfire > 0 ? '#ff8800' : '#00ffcc';
+        createParticles(player.x + player.width / 2, player.y, particleColor, 4);
+    }
 }
 
 function createAlienBullet(alien) {
+    let bulletWidth = 8;
+    let bulletHeight = 12;
+    let bulletSpeed = 5;
+    let vx = 0; // horizontal velocity
+
+    // Different bullet types based on alien behavior
+    if (alien.behavior === 'bomber') {
+        // Bombers shoot larger, faster bullets
+        bulletWidth = 12;
+        bulletHeight = 16;
+        bulletSpeed = 7;
+    } else if (alien.behavior === 'tracker') {
+        // Psychics shoot bullets that aim slightly toward player
+        const playerCenter = player.x + player.width / 2;
+        const alienCenter = alien.x + alien.width / 2;
+        const dx = playerCenter - alienCenter;
+        vx = dx * 0.02; // Slight tracking
+    }
+
     alienBullets.push({
-        x: alien.x + alien.width / 2 - 4,
+        x: alien.x + alien.width / 2 - bulletWidth / 2,
         y: alien.y + alien.height,
-        width: 8,
-        height: 12,
-        color: alien.type.color
+        width: bulletWidth,
+        height: bulletHeight,
+        color: alien.type.color,
+        speed: bulletSpeed,
+        vx: vx,
+        behavior: alien.behavior
     });
 }
 
@@ -522,6 +680,21 @@ function createExplosion(x, y, color) {
     }
 }
 
+function spawnPowerup(x, y) {
+    // Seleccionar tipo de power-up aleatorio
+    const powerupType = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+
+    powerups.push({
+        x: x - CONFIG.powerupSize / 2,
+        y: y,
+        width: CONFIG.powerupSize,
+        height: CONFIG.powerupSize,
+        type: powerupType,
+        pulse: 0,
+        collected: false
+    });
+}
+
 // ============================================
 // Funciones de Actualización
 // ============================================
@@ -537,6 +710,10 @@ function update() {
     updateStars();
     updateNebulas();
     updatePlanets();
+    updatePowerups();
+    updatePowerupTimers();
+    updateInvincibility();
+    updateHealthBar();
     checkCollisions();
 }
 
@@ -555,7 +732,11 @@ function updatePlayer() {
 function updateBullets() {
     bullets = bullets.filter(bullet => {
         bullet.y -= CONFIG.bulletSpeed;
-        return bullet.y > -bullet.height;
+        // Aplicar movimiento horizontal si tiene vx (tripleshot)
+        if (bullet.vx) {
+            bullet.x += bullet.vx;
+        }
+        return bullet.y > -bullet.height && bullet.x > -bullet.width && bullet.x < CONFIG.baseCanvasWidth + bullet.width;
     });
 }
 
@@ -580,12 +761,51 @@ function updateAliens() {
     }
 
     aliveAliens.forEach(alien => {
-        alien.x += CONFIG.alienSpeedX * alienDirection * alien.speedMultiplier;
+        // Base horizontal movement with speed modifier
+        const baseSpeed = CONFIG.initialAlienSpeedX * alienDirection * alien.speedMultiplier * alien.type.speedMod;
+        alien.x += baseSpeed;
         alien.wobble += 0.1;
         alien.pulsePhase += 0.05;
 
-        // Disparo de OVNIs
-        if (Math.random() < CONFIG.alienShootChance * alien.speedMultiplier) {
+        // Implement different movement behaviors
+        switch (alien.behavior) {
+            case 'zigzag':
+                // Scouts: vertical oscillation while moving
+                alien.zigzagOffset += 0.15;
+                alien.y += Math.sin(alien.zigzagOffset) * 0.5;
+                break;
+
+            case 'tracker':
+                // Psychics: slightly move toward player's x position
+                const playerCenter = player.x + player.width / 2;
+                const alienCenter = alien.x + alien.width / 2;
+                if (Math.abs(playerCenter - alienCenter) > 50) {
+                    alien.x += (playerCenter > alienCenter ? 0.3 : -0.3);
+                }
+                break;
+
+            case 'dasher':
+                // Speeders: occasionally dash down toward player
+                alien.dashTimer++;
+                if (alien.dashTimer > alien.dashCooldown) {
+                    // Quick dash
+                    alien.y += 30;
+                    alien.dashTimer = 0;
+                    alien.dashCooldown = Math.random() * 200 + 150;
+                    createParticles(alien.x + alien.width / 2, alien.y, alien.type.color, 4);
+                }
+                break;
+
+            case 'normal':
+            case 'tank':
+            case 'bomber':
+                // No special movement behavior
+                break;
+        }
+
+        // Disparo de OVNIs - use type-specific shoot modifier
+        const currentShootChance = (CONFIG.initialShootChance + (level - 1) * CONFIG.shootChanceIncreasePerLevel) * alien.type.shootMod;
+        if (Math.random() < currentShootChance * alien.speedMultiplier) {
             createAlienBullet(alien);
         }
 
@@ -603,8 +823,9 @@ function updateAliens() {
 
 function updateAlienBullets() {
     alienBullets = alienBullets.filter(bullet => {
-        bullet.y += 5;
-        return bullet.y < CONFIG.baseCanvasHeight;
+        bullet.y += bullet.speed || 5;
+        bullet.x += bullet.vx || 0; // Apply horizontal velocity for tracking bullets
+        return bullet.y < CONFIG.baseCanvasHeight && bullet.x > -bullet.width && bullet.x < CONFIG.baseCanvasWidth + bullet.width;
     });
 }
 
@@ -647,6 +868,61 @@ function updatePlanets() {
     });
 }
 
+function updatePowerups() {
+    powerups = powerups.filter(powerup => {
+        // Mover power-up hacia abajo
+        powerup.y += CONFIG.powerupSpeed;
+        powerup.pulse += 0.1;
+
+        // Remover si sale de la pantalla
+        return powerup.y < CONFIG.baseCanvasHeight + powerup.height;
+    });
+}
+
+function updatePowerupTimers() {
+    const deltaTime = 16; // approximately 60fps
+    if (activePowerups.rapidfire > 0) {
+        activePowerups.rapidfire = Math.max(0, activePowerups.rapidfire - deltaTime);
+    }
+    if (activePowerups.tripleshot > 0) {
+        activePowerups.tripleshot = Math.max(0, activePowerups.tripleshot - deltaTime);
+    }
+    if (activePowerups.shield > 0) {
+        activePowerups.shield = Math.max(0, activePowerups.shield - deltaTime);
+    }
+}
+
+function updateInvincibility() {
+    if (invincible && invincibleTimer > 0) {
+        invincibleTimer -= 16; // approximately 60fps
+        if (invincibleTimer <= 0) {
+            invincible = false;
+            invincibleTimer = 0;
+        }
+    }
+}
+
+function updateHealthBar() {
+    const healthBar = document.getElementById('healthBar');
+    const healthValue = document.getElementById('healthValue');
+
+    if (healthBar && healthValue) {
+        const healthPercent = (health / CONFIG.maxHealth) * 100;
+        healthBar.style.width = healthPercent + '%';
+        healthValue.textContent = Math.round(health);
+
+        // Update color class based on health
+        healthBar.classList.remove('high', 'medium', 'low');
+        if (healthPercent > 60) {
+            healthBar.classList.add('high');
+        } else if (healthPercent > 30) {
+            healthBar.classList.add('medium');
+        } else {
+            healthBar.classList.add('low');
+        }
+    }
+}
+
 // ============================================
 // Detección de Colisiones
 // ============================================
@@ -656,17 +932,38 @@ function checkCollisions() {
     bullets.forEach((bullet, bulletIndex) => {
         aliens.forEach(alien => {
             if (alien.alive && isColliding(bullet, alien)) {
-                alien.alive = false;
+                // Reduce alien health
+                alien.health--;
                 bullets.splice(bulletIndex, 1);
-                score += CONFIG.pointsPerAlien * level;
-                document.getElementById('score').textContent = score;
 
-                // Explosión espectacular
-                createExplosion(
-                    alien.x + alien.width / 2,
-                    alien.y + alien.height / 2,
-                    alien.type.color
-                );
+                if (alien.health <= 0) {
+                    // Alien destroyed
+                    alien.alive = false;
+                    score += alien.type.points * level;
+                    document.getElementById('score').textContent = score;
+
+                    // Explosión espectacular
+                    createExplosion(
+                        alien.x + alien.width / 2,
+                        alien.y + alien.height / 2,
+                        alien.type.color
+                    );
+
+                    // Chance to drop power-up
+                    if (Math.random() < CONFIG.powerupDropChance) {
+                        spawnPowerup(alien.x + alien.width / 2, alien.y + alien.height / 2);
+                    }
+                } else {
+                    // Alien hit but not destroyed - create smaller hit effect
+                    createParticles(
+                        alien.x + alien.width / 2,
+                        alien.y + alien.height / 2,
+                        alien.type.color,
+                        8
+                    );
+                    // Visual feedback for damage
+                    alien.pulsePhase = 0;
+                }
             }
         });
     });
@@ -674,20 +971,107 @@ function checkCollisions() {
     // Disparos de OVNIs golpeando al jugador
     alienBullets.forEach((bullet, index) => {
         if (isColliding(bullet, player)) {
-            alienBullets.splice(index, 1);
-            lives--;
-            document.getElementById('lives').textContent = '💚'.repeat(Math.max(0, lives));
+            // Solo aplicar daño si no está invencible y no tiene escudo activo
+            if (!invincible && activePowerups.shield <= 0) {
+                alienBullets.splice(index, 1);
+                health -= CONFIG.damagePerHit;
 
-            // Efecto de impacto
-            createExplosion(
-                player.x + player.width / 2,
-                player.y + player.height / 2,
-                '#ff0066'
-            );
+                // Efecto de impacto
+                createExplosion(
+                    player.x + player.width / 2,
+                    player.y + player.height / 2,
+                    '#ff0066'
+                );
 
-            if (lives <= 0) {
-                gameOver();
+                // Verificar si se acabó la salud
+                if (health <= 0) {
+                    lives--;
+
+                    // Actualizar display de vidas
+                    document.getElementById('lives').textContent = 'x' + Math.max(0, lives);
+
+                    if (lives > 0) {
+                        // Resetear salud y activar invencibilidad
+                        health = CONFIG.maxHealth;
+                        invincible = true;
+                        invincibleTimer = CONFIG.invincibilityTime;
+                        updateHealthBar();
+
+                        // Explosión más grande al perder una vida
+                        createExplosion(
+                            player.x + player.width / 2,
+                            player.y + player.height / 2,
+                            '#ff0000'
+                        );
+                    } else {
+                        gameOver();
+                    }
+                }
+
+                updateHealthBar();
+            } else if (activePowerups.shield > 0) {
+                // Si tiene escudo, solo eliminar la bala sin causar daño
+                alienBullets.splice(index, 1);
+                // Efecto visual de escudo bloqueando
+                createParticles(
+                    player.x + player.width / 2,
+                    player.y + player.height / 2,
+                    '#00ffff',
+                    8
+                );
             }
+        }
+    });
+
+    // Power-ups siendo recogidos por el jugador
+    powerups.forEach((powerup, index) => {
+        if (isColliding(powerup, player)) {
+            powerups.splice(index, 1);
+
+            // Aplicar efecto del power-up
+            const type = powerup.type.type;
+            switch(type) {
+                case 'health':
+                    health = Math.min(health + 25, CONFIG.maxHealth);
+                    updateHealthBar();
+                    break;
+
+                case 'shield':
+                    activePowerups.shield = powerup.type.duration;
+                    break;
+
+                case 'rapidfire':
+                    activePowerups.rapidfire = powerup.type.duration;
+                    break;
+
+                case 'tripleshot':
+                    activePowerups.tripleshot = powerup.type.duration;
+                    break;
+
+                case 'bomb':
+                    alienBullets = [];
+                    for (let i = 0; i < 50; i++) {
+                        createParticles(
+                            Math.random() * CONFIG.baseCanvasWidth,
+                            Math.random() * CONFIG.baseCanvasHeight,
+                            '#ff0000',
+                            3
+                        );
+                    }
+                    break;
+
+                case 'points':
+                    score += 100;
+                    document.getElementById('score').textContent = score;
+                    break;
+            }
+
+            // Efecto visual de recolección
+            createExplosion(
+                powerup.x + powerup.width / 2,
+                powerup.y + powerup.height / 2,
+                powerup.type.color
+            );
         }
     });
 }
@@ -717,10 +1101,12 @@ function draw() {
     drawPlanets();
     drawStars();
     drawParticles();
+    drawPowerups();
     drawPlayer();
     drawBullets();
     drawAliens();
     drawAlienBullets();
+    drawActivePowerupIndicators();
 
     // Mostrar nombre del sector actual
     if (gameRunning && !gamePaused) {
@@ -810,6 +1196,15 @@ function drawPlayer() {
     const w = player.width;
     const h = player.height;
 
+    // Efecto de parpadeo si está invencible
+    if (invincible || activePowerups.shield > 0) {
+        const blinkRate = invincible ? 100 : 150;
+        if (Math.floor(Date.now() / blinkRate) % 2 === 0) {
+            // En algunos frames no dibujamos al jugador (parpadeo)
+            ctx.globalAlpha = 0.3;
+        }
+    }
+
     // Resplandor del OVNI del jugador
     const glowGradient = ctx.createRadialGradient(
         x + w/2, y + h/2, 0,
@@ -888,6 +1283,9 @@ function drawPlayer() {
     ctx.lineTo(x + w * 0.42, y + h + propulsorHeight);
     ctx.closePath();
     ctx.fill();
+
+    // Resetear alpha al final
+    ctx.globalAlpha = 1;
 }
 
 function drawBullets() {
@@ -1025,38 +1423,116 @@ function drawAliens() {
         ctx.arc(alien.x + alien.width * 0.78, alien.y + wobbleOffset - 10, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+
+        // Health indicator for damaged aliens
+        if (alien.maxHealth > 1 && alien.health < alien.maxHealth) {
+            const healthBarWidth = alien.width * 0.8;
+            const healthBarHeight = 4;
+            const healthPercent = alien.health / alien.maxHealth;
+
+            // Background (red)
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(
+                alien.x + alien.width * 0.1,
+                alien.y + wobbleOffset - 15,
+                healthBarWidth,
+                healthBarHeight
+            );
+
+            // Foreground (green)
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(
+                alien.x + alien.width * 0.1,
+                alien.y + wobbleOffset - 15,
+                healthBarWidth * healthPercent,
+                healthBarHeight
+            );
+
+            // Border
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(
+                alien.x + alien.width * 0.1,
+                alien.y + wobbleOffset - 15,
+                healthBarWidth,
+                healthBarHeight
+            );
+        }
+
+        // Visual indicator for tanks (they're bigger and have special styling)
+        if (alien.behavior === 'tank') {
+            // Extra armor plating effect
+            ctx.strokeStyle = hexToRgba(alien.type.color, 0.5);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(
+                alien.x + alien.width/2,
+                alien.y + wobbleOffset + alien.height * 0.55,
+                (alien.width/2) * pulse * 1.1,
+                (alien.height * 0.2) * pulse * 1.1,
+                0, 0, Math.PI * 2
+            );
+            ctx.stroke();
+        }
+
+        // Visual effects for damaged aliens (flash red when hit)
+        if (alien.pulsePhase < 0.5 && alien.health < alien.maxHealth) {
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.ellipse(
+                alien.x + alien.width/2,
+                alien.y + wobbleOffset + alien.height/2,
+                alien.width/2,
+                alien.height/2,
+                0, 0, Math.PI * 2
+            );
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
     });
 }
 
 function drawAlienBullets() {
     alienBullets.forEach(bullet => {
+        // Adjust glow size based on bullet size
+        const glowRadius = bullet.behavior === 'bomber' ? 20 : 15;
+        const coreRadius = bullet.behavior === 'bomber' ? 6 : 4;
+
         // Resplandor del proyectil alienígena
         const gradient = ctx.createRadialGradient(
             bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 0,
-            bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 15
+            bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, glowRadius
         );
         gradient.addColorStop(0, bullet.color);
         gradient.addColorStop(0.5, hexToRgba(bullet.color, 0.4));
         gradient.addColorStop(1, 'transparent');
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 15, 0, Math.PI * 2);
+        ctx.arc(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, glowRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Núcleo brillante
+        // Núcleo brillante (bigger for bomber bullets)
         ctx.fillStyle = 'white';
         ctx.beginPath();
-        ctx.arc(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 4, 0, Math.PI * 2);
+        ctx.arc(bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, coreRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Estela
+        // Estela (longer for bomber bullets)
+        const trailLength = bullet.behavior === 'bomber' ? 15 : 10;
         ctx.fillStyle = hexToRgba(bullet.color, 0.3);
         ctx.beginPath();
-        ctx.moveTo(bullet.x + bullet.width / 2 - 3, bullet.y);
-        ctx.lineTo(bullet.x + bullet.width / 2 + 3, bullet.y);
-        ctx.lineTo(bullet.x + bullet.width / 2, bullet.y - 10);
+        ctx.moveTo(bullet.x + bullet.width / 2 - (bullet.width / 2), bullet.y);
+        ctx.lineTo(bullet.x + bullet.width / 2 + (bullet.width / 2), bullet.y);
+        ctx.lineTo(bullet.x + bullet.width / 2, bullet.y - trailLength);
         ctx.closePath();
         ctx.fill();
+
+        // Extra effect for tracker bullets (slight trail)
+        if (bullet.behavior === 'tracker' && bullet.vx) {
+            ctx.fillStyle = hexToRgba(bullet.color, 0.2);
+            ctx.fillRect(bullet.x - bullet.vx * 3, bullet.y, bullet.width, bullet.height);
+        }
     });
 }
 
@@ -1084,6 +1560,97 @@ function drawParticles() {
 
         ctx.globalAlpha = 1;
     });
+}
+
+function drawPowerups() {
+    powerups.forEach(powerup => {
+        const centerX = powerup.x + powerup.width / 2;
+        const centerY = powerup.y + powerup.height / 2;
+        const pulseSize = Math.sin(powerup.pulse) * 5 + powerup.width / 2;
+
+        // Resplandor exterior pulsante
+        const outerGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseSize * 1.5);
+        outerGlow.addColorStop(0, hexToRgba(powerup.type.color, 0.6));
+        outerGlow.addColorStop(0.5, hexToRgba(powerup.type.color, 0.3));
+        outerGlow.addColorStop(1, 'transparent');
+        ctx.fillStyle = outerGlow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, pulseSize * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Círculo de fondo
+        const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseSize);
+        bgGradient.addColorStop(0, hexToRgba(powerup.type.color, 0.9));
+        bgGradient.addColorStop(0.7, hexToRgba(powerup.type.color, 0.6));
+        bgGradient.addColorStop(1, hexToRgba(powerup.type.color, 0.3));
+        ctx.fillStyle = bgGradient;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, pulseSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Borde brillante
+        ctx.strokeStyle = powerup.type.color;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = powerup.type.color;
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Emoji en el centro
+        ctx.font = `${powerup.width * 0.6}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(powerup.type.emoji, centerX, centerY);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+    });
+}
+
+function drawActivePowerupIndicators() {
+    if (!gameRunning || gamePaused) return;
+
+    const indicatorY = 35;
+    const indicatorSize = 22;
+    let indicatorX = 10;
+
+    if (activePowerups.shield > 0) {
+        drawPowerupIndicator(indicatorX, indicatorY, indicatorSize, '🛡️', '#00ffff', activePowerups.shield, 5000);
+        indicatorX += indicatorSize + 5;
+    }
+    if (activePowerups.rapidfire > 0) {
+        drawPowerupIndicator(indicatorX, indicatorY, indicatorSize, '⚡', '#ff8800', activePowerups.rapidfire, 8000);
+        indicatorX += indicatorSize + 5;
+    }
+    if (activePowerups.tripleshot > 0) {
+        drawPowerupIndicator(indicatorX, indicatorY, indicatorSize, '🔱', '#ff00ff', activePowerups.tripleshot, 10000);
+        indicatorX += indicatorSize + 5;
+    }
+}
+
+function drawPowerupIndicator(x, y, size, emoji, color, timeRemaining, maxDuration) {
+    // Background
+    ctx.fillStyle = hexToRgba(color, 0.3);
+    ctx.fillRect(x, y, size, size);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, size, size);
+
+    // Emoji
+    ctx.font = `${size * 0.6}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(emoji, x + size / 2, y + size / 2);
+
+    // Timer bar
+    const barHeight = 3;
+    const barWidth = size * (timeRemaining / maxDuration);
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y + size - barHeight, barWidth, barHeight);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
 }
 
 // ============================================
