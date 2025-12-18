@@ -97,6 +97,14 @@ const ALIEN_TYPES = [
     { color: '#ff6600', eyes: '🔥', type: 'solar', nombre: 'Guerrero Solar' }
 ];
 
+// Helper function to convert hex color to rgba
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 // Nombres de planetas para cada nivel
 const PLANET_NAMES = [
     'Vía Láctea',
@@ -752,7 +760,7 @@ function drawPlanets() {
             planet.x, planet.y, 0,
             planet.x, planet.y, planet.radius * 2
         );
-        glowGradient.addColorStop(0, planet.color.replace(')', ', 0.3)').replace('rgb', 'rgba').replace('#', 'rgba('));
+        glowGradient.addColorStop(0, hexToRgba(planet.color, 0.3));
         glowGradient.addColorStop(1, 'transparent');
         ctx.fillStyle = glowGradient;
         ctx.beginPath();
@@ -919,7 +927,7 @@ function drawAliens() {
             alien.x + alien.width/2, alien.y + wobbleOffset + alien.height/2, 0,
             alien.x + alien.width/2, alien.y + wobbleOffset + alien.height/2, alien.width * 0.8
         );
-        glowGradient.addColorStop(0, alien.type.color.replace(')', ', 0.35)').replace('rgb', 'rgba'));
+        glowGradient.addColorStop(0, hexToRgba(alien.type.color, 0.35));
         glowGradient.addColorStop(1, 'transparent');
         ctx.fillStyle = glowGradient;
         ctx.beginPath();
@@ -1028,7 +1036,7 @@ function drawAlienBullets() {
             bullet.x + bullet.width / 2, bullet.y + bullet.height / 2, 15
         );
         gradient.addColorStop(0, bullet.color);
-        gradient.addColorStop(0.5, bullet.color.replace(')', ', 0.4)').replace('rgb', 'rgba'));
+        gradient.addColorStop(0.5, hexToRgba(bullet.color, 0.4));
         gradient.addColorStop(1, 'transparent');
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -1042,7 +1050,7 @@ function drawAlienBullets() {
         ctx.fill();
 
         // Estela
-        ctx.fillStyle = bullet.color.replace(')', ', 0.3)').replace('rgb', 'rgba');
+        ctx.fillStyle = hexToRgba(bullet.color, 0.3);
         ctx.beginPath();
         ctx.moveTo(bullet.x + bullet.width / 2 - 3, bullet.y);
         ctx.lineTo(bullet.x + bullet.width / 2 + 3, bullet.y);
