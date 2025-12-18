@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comba Invaders - Space Adventure!</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Photo frames for nephews -->
+        <div class="photo-frame photo-frame-left">
+            <div class="frame-decoration">
+                <span class="star">⭐</span>
+                <span class="star">🌟</span>
+            </div>
+            <img src="assets/images/nephew1.png" alt="Player 1" class="nephew-photo" id="nephew1">
+            <p class="photo-label">Space Captain!</p>
+        </div>
+
+        <div class="game-wrapper">
+            <header class="game-header">
+                <h1>🚀 Comba Invaders 👾</h1>
+                <div class="score-board">
+                    <div class="score">Score: <span id="score">0</span></div>
+                    <div class="lives">Lives: <span id="lives">❤️❤️❤️</span></div>
+                    <div class="level">Level: <span id="level">1</span></div>
+                </div>
+            </header>
+
+            <main class="game-area">
+                <canvas id="gameCanvas" width="600" height="500"></canvas>
+
+                <!-- Start screen overlay -->
+                <div class="overlay" id="startScreen">
+                    <div class="overlay-content">
+                        <h2>🎮 Ready to Play? 🎮</h2>
+                        <p>Help defend Earth from the silly aliens!</p>
+                        <button class="play-btn" id="startBtn">START GAME!</button>
+                        <div class="controls-info">
+                            <p>⬅️ ➡️ Arrow keys to move</p>
+                            <p>SPACE to shoot!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game over overlay -->
+                <div class="overlay hidden" id="gameOverScreen">
+                    <div class="overlay-content">
+                        <h2>🌟 Game Over! 🌟</h2>
+                        <p>Amazing job, Space Captain!</p>
+                        <p class="final-score">Your Score: <span id="finalScore">0</span></p>
+                        <button class="play-btn" id="restartBtn">PLAY AGAIN!</button>
+                    </div>
+                </div>
+
+                <!-- Level complete overlay -->
+                <div class="overlay hidden" id="levelCompleteScreen">
+                    <div class="overlay-content">
+                        <h2>🎉 Level Complete! 🎉</h2>
+                        <p>You're a superstar!</p>
+                        <button class="play-btn" id="nextLevelBtn">NEXT LEVEL!</button>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="game-footer">
+                <p>Made with 💖 for my favorite space explorers!</p>
+            </footer>
+        </div>
+
+        <div class="photo-frame photo-frame-right">
+            <div class="frame-decoration">
+                <span class="star">🌟</span>
+                <span class="star">⭐</span>
+            </div>
+            <img src="assets/images/nephew2.png" alt="Player 2" class="nephew-photo" id="nephew2">
+            <p class="photo-label">Space Hero!</p>
+        </div>
+    </div>
+
+    <!-- Floating decorations -->
+    <div class="floating-elements">
+        <span class="float-item rocket">🚀</span>
+        <span class="float-item planet">🪐</span>
+        <span class="float-item star-float">⭐</span>
+        <span class="float-item ufo">🛸</span>
+        <span class="float-item moon">🌙</span>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>

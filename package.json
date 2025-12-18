@@ -1,0 +1,19 @@
+{
+  "name": "comba-invaders",
+  "version": "1.0.0",
+  "description": "A fun alien invaders game styled for children, featuring family photos",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve . -p 3000"
+  },
+  "keywords": [
+    "game",
+    "space-invaders",
+    "kids",
+    "html5",
+    "canvas"
+  ],
+  "author": "",
+  "license": "MIT"
+}
